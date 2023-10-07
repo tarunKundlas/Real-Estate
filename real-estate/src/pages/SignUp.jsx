@@ -3,25 +3,43 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 
 function SignUp() {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value,
-    });
+    const id = e.target.id;
+    const value = e.target.value;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [id]: value,
+    }));
+    console.log(formData);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post("YOUR_API_ENDPOINT_HERE", formData);
+      console.log(formData);
+      const response = await axios.post(
+        "http://localhost:8000/api/auth/signup",
+        formData
+      );
+      console.log(response);
+      const data = await response.data;
+      console.log(data);
+      if (data.success === false) {
+        setError(data.message);
 
-      // Handle success, e.g., redirect to a dashboard or show a success message.
+        return;
+      }
+
       console.log("Signup Successful", response.data);
     } catch (error) {
-      // Handle error, e.g., show an error message.
       console.error("Signup Failed", error);
     }
   };
