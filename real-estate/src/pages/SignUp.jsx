@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function SignUp() {
@@ -9,6 +9,8 @@ function SignUp() {
     password: "",
   });
   const [error, setError] = useState(null);
+  const [laoding, setLoading] = useState();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const id = e.target.id;
@@ -17,11 +19,11 @@ function SignUp() {
       ...prevFormData,
       [id]: value,
     }));
-    console.log(formData);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       console.log(formData);
@@ -34,12 +36,16 @@ function SignUp() {
       console.log(data);
       if (data.success === false) {
         setError(data.message);
-
+        setLoading(false);
         return;
       }
-
+      setLoading(false);
+      setError(null);
+      navigate("/signin");
       console.log("Signup Successful", response.data);
     } catch (error) {
+      setLoading(false);
+      setError(error.message);
       console.error("Signup Failed", error);
     }
   };
@@ -69,8 +75,10 @@ function SignUp() {
           className="border p-3 rounded-lg "
           id="password"
         />
-        <button className=" bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80">
-          Sign Up
+        <button
+          disable={laoding}
+          className=" bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80">
+          {laoding ? "Loading..." : "Sign Up"}
         </button>
       </form>
 
@@ -79,6 +87,7 @@ function SignUp() {
         <Link to={"/signin"}>
           <span className="text-blue-700">Sign In</span>
         </Link>
+        <div>{error && <p className="text-red-500 mt-5">{error}</p>}</div>
       </div>
     </div>
   );
