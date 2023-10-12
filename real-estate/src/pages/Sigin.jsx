@@ -7,6 +7,7 @@ import {
   signInSuccess,
   signInFailure,
 } from "../user/userSlice.js";
+import Oauth from "../component/Oauth.jsx";
 
 function Signin() {
   const [formData, setFormData] = useState({
@@ -73,6 +74,7 @@ function Signin() {
           className=" bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80">
           {loading ? "Loading..." : "Sign In"}
         </button>
+        <Oauth />
       </form>
 
       <div className="flex flex-wrap justify-between mx-2 mt-2">
