@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useRef } from "react";
+import {
+  ref,
+  getStorage,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
+import { app } from "../firebase.js";
 
 function Profile() {
   const { currentUser } = useSelector((state) => state.user);
-  // const [file, setFile] = useState(undefined);
-  // console.log(file);
+  const [file, setFile] = useState(undefined);
+  const [filePrec, setFilePrec] = useState(0);
+  const [fileUploadError, setFileUploadError] = useState(false);
+  const [formData, setFormData] = useState({});
+  console.log(file);
   const fileRef = useRef(null);
 
   // firebase storaeg
@@ -15,15 +25,34 @@ function Profile() {
   // request.resource.size < 1024 * 2 *1024 &&
   // request.resource.contentType.matches('image/.*')
 
-  // useEffect(() => {
-  //   if (file) {
-  //     handleFileUpload();
-  //   }
-  // }, [file]);
+  useEffect(() => {
+    if (file) {
+      handleFileUpload(file);
+    }
+  }, [file]);
 
-  const handleFileUpload = () => {
-    // const storage = getStorage(app);
-    // const fileName = new Date().getTime() + file.name;
+  const handleFileUpload = (file) => {
+    const storage = getStorage(app);
+    const fileName = new Date().getTime() + file.name;
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setFilePrec(Math.round(progress));
+      },
+      (error) => {
+        setFileUploadError(true);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          setFormData({ ...formData, avatar: downloadURL });
+        });
+      }
+    );
   };
 
   return (
@@ -31,7 +60,7 @@ function Profile() {
       <h1 className="text-3xl font-semibold text-center my-7 ">Profile</h1>
       <form className="flex flex-col gap-4">
         <input
-          // onChange={(e) => setFile(e.target.files[0])}
+          onChange={(e) => setFile(e.target.files[0])}
           type="file"
           ref={fileRef}
           hidden
